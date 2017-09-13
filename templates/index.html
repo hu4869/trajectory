@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    {% load staticfiles %}
+    <script>
+        var staticurl = '{{ STATIC_URL }}'
+    </script>
+    <script src="{% static "porto_map.js" %}"></script>
+</head>
+<body>
+first page {{ a }}
+</body>
+</html>
