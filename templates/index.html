@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load leaflet_tags %}
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <title></title>
-    {% load staticfiles %}
-    <script>
-        var staticurl = '{{ STATIC_URL }}'
-    </script>
-    <script src="{% static "porto_map.js" %}"></script>
+    {% leaflet_css plugins="ALL" %}
+    {% leaflet_js plugins="ALL" %}
+
+    <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js'></script>
+
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'porto.css' %}">
+    <script src="{% static "initial_map.js" %}"></script>
+    <script src="{% static "viewLayer.js" %}"></script>
 </head>
 <body>
-first page {{ a }}
+
+{% leaflet_map "map" %}
+{#<div id="map"></div>#}
+<div id="chart"></div>
+<input name="daterange" type="text" style="position: absolute;
+    left: 50px;
+    top: 12px;
+    z-index: 1000;">
 </body>
 </html>

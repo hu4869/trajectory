@@ -36,8 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # 'livesync',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'livereload',
+    'leaflet',
     'portoapp'
 ]
 
@@ -49,7 +52,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'livereload.middleware.LiveReloadScript',
 ]
+
+MIDDLEWARE_CLASSES = (
+    'livereload.middleware.LiveReloadScript',
+)
 
 ROOT_URLCONF = 'porto.urls'
 
@@ -128,9 +136,39 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
 STATIC_URL = '/porto/static/'
+# STATICFILES_DIRS = (BASE_DIR, 'static')
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,  'templates'),
 )
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+js_list = [line.strip() for line in open(os.path.join(PROJECT_ROOT, 'js_list'))]
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (41.155376, -8.613999),
+    'DEFAULT_ZOOM': 15,
+    'TILES': [('street', 'https://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiemdYSVVLRSJ9.g3lbg_eN0kztmsfIPxa9MQ',{'attributions': '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
+              ('light', 'https://api.tiles.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiemdYSVVLRSJ9.g3lbg_eN0kztmsfIPxa9MQ',{'attributions': '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
+              ('google', 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', {'attribute':'google'})],
+    'SPATIAL_EXTENT': (-8.55, 41.1, -8.67, 41.2),
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 20,
+    'RESET_VIEW': True,
+    'PREFERCANVAS': True,
+    # 'SCALE': 'both',
+    # 'MINIMAP': True,
+    'PLUGINS': {
+        'draw': {
+                'css': 'css/leaflet.draw.css',
+                'js': js_list,
+                'auto-include': True,
+            },
+        'easy-button': {
+                'css': 'css/easy-button.css',
+                'js': 'libs/easy-button.js',
+                'auto-include': True,
+            }
+        },
+    }

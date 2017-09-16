@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from portoapp import views as tripmap
+from portoapp import views as view
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', tripmap.index),
+    url(r'^$', view.index),
+    url(r'^query$', view.query),
 ]
