@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'portoapp'
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,14 +88,26 @@ WSGI_APPLICATION = 'porto.wsgi.application'
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#          'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'host': '10.18.202.73',
+#         'port': '5433',
+#          'NAME': 'postgres',
+#          'USER': 'postgres',
+#          'PASSWORD': 'user',
+#     },
+# }
+
 DATABASES = {
     'default': {
          'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'Porto_Taxi',
+         'NAME': 'porto',
          'USER': 'postgres',
-         'PASSWORD': 'user',
+         'PASSWORD': 'yueyue',
     },
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

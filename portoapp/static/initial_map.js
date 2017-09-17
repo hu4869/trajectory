@@ -8,15 +8,14 @@
 window.addEventListener("map:init", function (event){
     var _m = event.detail.map;
     var mv = new map_widget(_m);
+    var view = new viewLayer(_m);
     mv.init();
+    view.init()
 });
 
 // inital query widgets on map
 function map_widget(_map){
     var map = _map;
-
-    var trip = new Trips(map);
-    var street = new Streets(map);
 
     // configure of current query
     var state = new (

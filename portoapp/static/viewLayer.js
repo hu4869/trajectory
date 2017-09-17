@@ -3,8 +3,8 @@
  * show query and highlight results in the view
  */
 
-function ViewLayer(){
-    var layer = null, map = null,
+function ViewLayer(_m){
+    var layer = null, map = _m,
         //store highlight/select information in config
         //when highlight set changes, update the style function
         config = {
@@ -27,8 +27,7 @@ function ViewLayer(){
             'tripends': {}
         };
 
-    this.init = function(_m){
-        map = _m;
+    this.init = function(){
         layer = L.geoJSON();
         layer.addTo(map)
     };
@@ -40,8 +39,6 @@ function ViewLayer(){
             change_target();
         }
     };
-
-    this.highlight()
 
     function styleFunc(feature){
         return styles[feature.properties.target](feature.properties);
@@ -115,7 +112,7 @@ function ViewLayer(){
                 missing.push(d)
             }
         });
-        get_trips_data(missing);
+        get_missing_data(missing, 'trip');
     };
 
     //generate grow

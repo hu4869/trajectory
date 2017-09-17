@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from portoapp import models
-# Create your views here.
+from django.http import HttpResponse
 import json
+
 from django_pandas.io import read_frame
 
 def index(request):
@@ -34,11 +35,28 @@ def query(request):
     request.session['trip'] = m_trip
 
     # get streets aggregate information table information
-    models.PortoPoints.objects.filter(tripid__in=m_trip['tripid']).aggregate('segmentid')
-    request.session['segment'] = read_frame(models)
+    models.PortoPoints.objects.filter(tripid__in=m_trip['tripid'])
+    m_segs = read_frame(models).groupby('segmentid').tripid.unique()
+    request.session['segment'] = m_segs
+
+    tids = m_trip['tripid'].apply(list)
+    sids = m_segs['segmentid'].apply(list)
+
+    return HttpResponse(json.dumps({
+        trips
+    }), content_type="application/json")
 
 def get_by_ids(request):
     para = json.loads(request.POST['val'])
-    db = request.session[request.POST['target']]
+    target = request.POST['target']
+    db = request.session[target]
+
+    l = db[db[id].isin(para)]
+    if target == 'trip':
+        res = {
+            trip: l['']
+        }
+
+    return HttpResponse(json.dumps(l), content_type="application/json")
 
 
