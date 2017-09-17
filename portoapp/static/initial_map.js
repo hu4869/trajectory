@@ -7,19 +7,6 @@
 
 window.addEventListener("map:init", function (event){
     var _m = event.detail.map;
-    //var _m = L.map('map', {
-    //    center: [lat, lng], // Porto
-    //    zoom: zoom,
-    //    layers: [streets, RoadTypeLayer[2], RoadTypeLayer[5]],
-    //    zoomControl: false,
-    //    preferCanvas: true,
-    //    fullscreenControl: true,
-    //    fullscreenControlOptions: { // optional
-    //        title: "Show me the fullscreen !",
-    //        titleCancel: "Exit fullscreen mode",
-    //        position: 'topright'
-    //    }
-    //});
     var mv = new map_widget(_m);
     mv.init();
 });
@@ -28,39 +15,45 @@ window.addEventListener("map:init", function (event){
 function map_widget(_map){
     var map = _map;
 
-    var trip_layer = new Trips(map);
-    var street_layer = new Streets(map);
+    var trip = new Trips(map);
+    var street = new Streets(map);
 
     // configure of current query
+    var state = new (
     function query_state(){
         var state = {
             start: true,
             end: true,
             intersect: false,
-            time_range:[
-                Date('2013-07-01'), Date('2013-07-05')
-            ],
+            time_range: ['2013-07-01', '2013-07-05'],
             area: '',
             view: 'trips'
+        };
+
+        this.toggle_target = function(tar){
+            state['tar'] ^= true;
         };
 
         this.update_state = function(key, value){
             if (state[key] != value){
                 state[key] = value;
-                //get new trip ids and send to trip and street draw
-                $.post('query', state, function(ids){
-                    trip_layer
-                })
+                if (state.area){
+                    var para = {
+                        val:  JSON.stringify(state),
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    }
+                    //get new trip ids and send to trip and street draw
+                    $.post('query', para, function(ids){
+
+                    })
+                }
             }
         }
-    }
+    });
 
     //when the query state changes,
 
     this.init = function(){
-        street_layer.init();
-        trip_layer.init();
-
         add_time_picker();
         add_query_tool();
         add_view_switcher();
@@ -77,7 +70,7 @@ function map_widget(_map){
             endDate: '2013-07-05'
         },
         function(start, end, label) {
-            query_state.time_range = [start, end];
+            state.update_state('time_range', [start.format('YYYY-mm-dd'), end.format('YYYY-mm-dd')]);
         });
     }
 
@@ -146,7 +139,7 @@ function map_widget(_map){
         //also clean map
         map.on(L.Draw.Event.DRAWSTART, function(){
             drawnItems.clearLayers();
-            query_state.area = [];
+            state.update_state('area', null);
         });
 
         map.on(L.Draw.Event.CREATED, function (event) {
@@ -164,13 +157,15 @@ function map_widget(_map){
         // get current selected area (only one)
         var layer = drawnItems.getLayers()[0];
         if ('getLatLng' in layer){
-            query_state.area = {
-                c: layer.getLatLng(),
+            var pos = layer.getLatLng();
+            state.update_state('area', {
+                lat: pos.lat,
+                lng: pos.lng,
                 r: layer.getRadius()
-            }
+            })
         }
         else{
-            query_state.area = layer.getLatLngs();
+            state.update_state('area', layer._LatLngs);
         }
     }
 
@@ -203,7 +198,7 @@ function map_widget(_map){
                     title: d.title,
                     leafletClasses: true,
                     onClick: function() {
-                        query_state[d.name] ^= true;
+                        state.toggle_target(d.name);
                         $(this.button).toggleClass('checked');
                         // if select area exists, submit a new query
                     }

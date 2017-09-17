@@ -10,6 +10,7 @@ libs/draw/DrawToolbar.js
 libs/draw/handler/Draw.Feature.js
 libs/draw/handler/Draw.SimpleShape.js
 libs/draw/handler/Draw.Circle.js
+libs/draw/handler/Draw.CircleMarker.js
 libs/draw/handler/Draw.Marker.js
 libs/draw/handler/Draw.Polygon.js
 libs/draw/handler/Draw.Polyline.js
@@ -21,6 +22,7 @@ libs/edit/handler/Edit.SimpleShape.js
 libs/edit/handler/Edit.Marker.js
 libs/edit/handler/Edit.Rectangle.js
 libs/edit/handler/Edit.Circle.js
+libs/edit/handler/Edit.CircleMarker.js
 libs/edit/EditToolbar.js
 libs/edit/handler/EditToolbar.Delete.js
 libs/edit/handler/EditToolbar.Edit.js

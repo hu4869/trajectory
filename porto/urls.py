@@ -20,5 +20,6 @@ from portoapp import views as view
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', view.index),
-    url(r'^query$', view.query),
+    url(r'^query', view.query),
+    url(r'^get_by_ids', view.get_by_ids),
 ]

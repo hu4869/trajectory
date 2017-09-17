@@ -55,10 +55,6 @@ MIDDLEWARE = [
     'livereload.middleware.LiveReloadScript',
 ]
 
-MIDDLEWARE_CLASSES = (
-    'livereload.middleware.LiveReloadScript',
-)
-
 ROOT_URLCONF = 'porto.urls'
 
 TEMPLATES = [
@@ -95,9 +91,9 @@ WSGI_APPLICATION = 'porto.wsgi.application'
 DATABASES = {
     'default': {
          'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'porto',
+         'NAME': 'Porto_Taxi',
          'USER': 'postgres',
-         'PASSWORD': 'yueyue',
+         'PASSWORD': 'user',
     },
 }
 
