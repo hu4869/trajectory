@@ -13,22 +13,23 @@ def index(request):
 def query(request):
     para = json.loads(request.POST['val'])
 
-    trips = models.PortoTrips.objects.order_by('-length')\
-        .filter(starttime__in=para['time_range'][0]);
-
-    extra = 'ST_%{func}s({col}::geography, %{area}s)'
+    trips = models.PortoTrips.objects.order_by('-length').filter(starttime__in=para['time_range'])
+    extra = 'ST_%(func)s(%(col)s::geography, %(area)s)'
     val = {}
     area = para['area']
     if (type(area) == type({})):
         val['func'] = 'dwithin'
-        val['area'] = 'ST_makepoint(%{lat}s, %{lng}s), %{r}s)'%area
+        val['area'] = 'ST_makepoint(%(lat)s, %(lng)s), %(r)s)'%area
     else:
         val['func'] = 'contains'
         val['area'] = 'ST_GeomFromText('+','.join([str(a[0])+' '+str(a[1]) for a in area])+')'
 
-    if area.start:
-        val['area'] = 'startpoint'
-        trips.extra(extra)
+    if para['start']:
+        val['col'] = 'startpoint'
+    elif para['end']:
+        val['col'] = 'endpoint'
+
+    trips.extra(extra % val)
 
     # get trips information for aggregation
     m_trip = read_frame(trips)
@@ -54,9 +55,11 @@ def get_by_ids(request):
     l = db[db[id].isin(para)]
     if target == 'trip':
         res = {
-            trip: l['']
+            'trip': l.trippoints,
+            'tripend': [l.startpoint, l.endpoinst]
         }
-
-    return HttpResponse(json.dumps(l), content_type="application/json")
+    else:
+        res = {l.segmentpoints}
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 

@@ -88,25 +88,26 @@ WSGI_APPLICATION = 'porto.wsgi.application'
 #     }
 # }
 
-# DATABASES = {
-#     'default': {
-#          'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'host': '10.18.202.73',
-#         'port': '5433',
-#          'NAME': 'postgres',
-#          'USER': 'postgres',
-#          'PASSWORD': 'user',
-#     },
-# }
-
 DATABASES = {
     'default': {
          'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'porto',
+        'HOST': '10.18.202.73',
+        'PORT': '5433',
+         'NAME': 'Porto_Taxi',
          'USER': 'postgres',
-         'PASSWORD': 'yueyue',
+         'PASSWORD': 'user',
     },
 }
+
+# DATABASES = {
+#     'default': {
+#          'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#          'NAME': 'Porto_Taxi',
+#          'USER': 'postgres',
+#          'PASSWORD': 'user',
+#             'PORT':'5433'
+#     },
+# }
 
 
 # Password validation

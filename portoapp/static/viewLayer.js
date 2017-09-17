@@ -16,7 +16,7 @@ function ViewLayer(_m){
             },
             //excluded levels, empty means draw all
             segment_level:[],
-            highlight: set()
+            highlight: []
         },
         //store <type, <id, geojson>>, used to save data when a new layer created
         //when new query result is ready, compare the new ids to this
@@ -35,16 +35,14 @@ function ViewLayer(_m){
     // the gateway to change regard the view style
     this.change_config = function(key, _new_value){
         config[key] = _new_value;
-        if (key == 'target'){
-            change_target();
-        }
+        layer.setStyle(styleFunc);
     };
 
     function styleFunc(feature){
         return styles[feature.properties.target](feature.properties);
     };
 
-    var flow2weight = d3.LinearScale().domain([0, 100]).range([2, 10]);
+    var flow2weight = d3.scaleLinear().domain([0, 100]).range([2, 10]);
     var styles = {
         trip: function(prop){
             if(prop.id in config.highlight){
@@ -75,7 +73,15 @@ function ViewLayer(_m){
     }
 
     // when the target change, replace layer
-    function change_target(){
+    this.change_target = function(target){
+        var pos = $.inArray(target, config.target);
+        if (pos < 0){
+            config.target.push(target)
+        }
+        else{
+            config.target.splice(pos, 1)
+        }
+
         var tmp = $.map(data, function (k, v) {
             if (k in config.target){
                 return $.map(v, function(i, v){
@@ -84,10 +90,6 @@ function ViewLayer(_m){
             }
         });
         replace_layer(tmp)
-    }
-
-    function reset_view_style(){
-        layer.setStyle(styleFunc)
     }
 
     function replace_layer(tmp){
