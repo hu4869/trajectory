@@ -1,17 +1,63 @@
 body{
     margin: 0;
 }
+
 #map{
     width: calc(100vw - 500px);
-    height: 100vh;
-    float: left;
+    height: 90vh;
 }
+
+#timeline{
+    position: absolute;
+    bottom: 0;
+    z-index: 1000;
+    width: calc(100vw - 500px);
+    height: calc(10vw - 50px);
+}
+#timelinebar{
+    position: absolute;
+    bottom: 10vh;
+    width: 350px;
+    height: 40px;
+    z-index: 1010;
+    /*background-color: white;*/
+}
+
+#streetview{
+    position: absolute;
+    width: 800px;
+    height: 600px;
+    right: 0px;
+    bottom: calc(10vw - 50px);
+}
+
 #chart{
+    position: fixed;
+    top: 0px;
+    right: 0px;
     width: 495px;
     height: 100vh;
     background-color: white;
-    float: left;
 }
+
 button.checked{
     background-color: lightblue!important;
+}
+
+.area {
+  fill: steelblue;
+  clip-path: url(#clip);
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
+
+.obar{
+    fill: steelblue;
+}
+.hbar{
+    fill: orange;
 }

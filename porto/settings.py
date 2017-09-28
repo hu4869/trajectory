@@ -37,9 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     # 'livesync',
+    'livereload',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # 'livereload',
     'leaflet',
     'portoapp'
 ]
@@ -52,7 +52,11 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'livereload.middleware.LiveReloadScript',
+    # 'livereload.middleware.LiveReloadScript'
+]
+
+MIDDLEWARE = [
+    'livereload.middleware.LiveReloadScript'
 ]
 
 ROOT_URLCONF = 'porto.urls'
@@ -77,19 +81,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'porto.wsgi.application'
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-#         'LOCATION': 'my_cache_table',
-#     }
-# }
-
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
     }
 }
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#     }
+# }
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -159,6 +163,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_URL = '/porto/static/'
+STATIC_ROOT = '/static/'
 # STATICFILES_DIRS = (BASE_DIR, 'static')
 
 TEMPLATE_DIRS = (
