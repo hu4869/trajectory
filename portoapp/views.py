@@ -1,65 +1,151 @@
 from django.shortcuts import render
-from portoapp import models
 from django.http import HttpResponse
 import json
-
-from django_pandas.io import read_frame
+from django.core.cache import cache
+from django.db import connection
+import pandas as pd
+import time
 
 def index(request):
-    request.session['trip'] = None
-    request.session['segment'] = None
     return render(request, 'index.html', {'a': 1})
 
 def query(request):
     para = json.loads(request.POST['val'])
 
-    trips = models.PortoTrips.objects.order_by('-length').filter(starttime__in=para['time_range'])
-    extra = 'ST_%(func)s(%(col)s::geography, %(area)s)'
-    val = {}
+    conf = {
+        'start_time': para['time_range'][0],
+        'end_time': para['time_range'][1],
+        'sort': para['sort'],
+        'desc': para['desc']
+    }
+
     area = para['area']
-    if (type(area) == type({})):
-        val['func'] = 'dwithin'
-        val['area'] = 'ST_makepoint(%(lat)s, %(lng)s), %(r)s)'%area
+
+    if type(area) == type({}):
+        # this is a circle
+        conf['func'] = "st_dwithin(%(target)s::geography, "+"ST_makepoint(%(lng)s,%(lat)s), %(r)s)"%area
     else:
-        val['func'] = 'contains'
-        val['area'] = 'ST_GeomFromText('+','.join([str(a[0])+' '+str(a[1]) for a in area])+')'
-
+        area = area[0]
+        area.append(area[0])
+        conf['func'] = 'st_contains(st_geomfromtext(\'polygon((%s))\', 4326),'%','.join(['%(lng)s %(lat)s'%a for a in area])+' %(target)s)'
+    geo = []
     if para['start']:
-        val['col'] = 'startpoint'
-    elif para['end']:
-        val['col'] = 'endpoint'
+        geo.append(conf['func'] % {'target':'startpoint'})
+    if para['end']:
+        geo.append(conf['func'] % {'target':'endpoint'})
+    conf['geo'] = ' or '.join(geo)
 
-    trips.extra(extra % val)
+    query = "select tripid, taxiid, triplength, starttime, endtime, " \
+            "ST_AsGeojson(startpoint) as startpoint, ST_AsGeojson(endpoint) as endpoint from porto_trips where " \
+            "starttime >='%(start_time)s' and starttime<='%(end_time)s' " \
+            "and (%(geo)s) order by %(sort)s %(desc)s"%conf
 
-    # get trips information for aggregation
-    m_trip = read_frame(trips)
-    request.session['trip'] = m_trip
+    # get trip information is ready too slow, store it.
+    print(query)
+    t0 = time.time()
+    cache.delete('trip')
 
-    # get streets aggregate information table information
-    models.PortoPoints.objects.filter(tripid__in=m_trip['tripid'])
-    m_segs = read_frame(models).groupby('segmentid').tripid.unique()
-    request.session['segment'] = m_segs
+    m_trip = pd.read_sql(query, connection)
+    t1 = time.time()
+    print ('query', t1-t0)
 
-    tids = m_trip['tripid'].apply(list)
-    sids = m_segs['segmentid'].apply(list)
+    t0 = time.time()
+    cache.set('trip', m_trip)
+    # store query in session, redo query when cache is timeout
+    request.session['query'] = query
+    t1 = time.time()
+    print('cache set: ', t1 - t0)
 
-    return HttpResponse(json.dumps({
-        trips
-    }), content_type="application/json")
+    res = m_trip['tripid'].tolist()
+    return HttpResponse(json.dumps(res), content_type="application/json")
 
 def get_by_ids(request):
     para = json.loads(request.POST['val'])
     target = request.POST['target']
-    db = request.session[target]
 
-    l = db[db[id].isin(para)]
     if target == 'trip':
-        res = {
-            'trip': l.trippoints,
-            'tripend': [l.startpoint, l.endpoinst]
-        }
+        res = get_trips_by_ids(para)
     else:
-        res = {l.segmentpoints}
+        res = get_segment_by_ids(para)
+
     return HttpResponse(json.dumps(res), content_type="application/json")
 
+def get_segment_by_ids(ids):
+    db = cache.get('segment')
+    l = db[db['segmentid'].isin(ids)]
+    # get profile in street table
+    ids = l['segmentid'].tolist()
+    m_segment = pd.read_sql(
+        'select segmentid, tripid from portopoints where tripid in (%s)'
+        % ','.join([str(i) for i in ids]))
+    return {
+        'id:': ids,
+        'segment': l['segmentpoints'].tolist()
+    }
 
+def get_trips_by_ids(ids):
+    t0 = time.time()
+    query = 'select tripid, ST_AsGeojson(trippoints) as points, ' \
+            'ST_AsGeojson(startpoint) as startpoint, ST_AsGeojson(endpoint) as endpoint' \
+            ' from porto_trips where tripid in (%s)'\
+            %','.join([str(i) for i in ids])
+    l = pd.read_sql(query, connection)
+
+    # db = cache.get('trip')
+    # l = db[db['tripid'].isin(ids)]
+
+    t1 = time.time()
+    print('cache get: ', t1-t0)
+
+    return {
+        'id': l['tripid'].tolist(),
+        'trip': l['points'].tolist(),
+        'start': l['startpoint'].tolist(),
+        'end': l['endpoint'].tolist()
+    }
+
+# aggregate trips id into barchart bins
+# group by hour, weekday
+from math import log
+from datetime import date, datetime
+
+def json_serial(obj):
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
+
+def get_side_bar(request):
+    db = cache.get('trip')
+    res = db[['tripid', 'starttime', 'endtime', 'triplength']]
+
+    hourData = [[] for _ in range(24)]
+    weekData = [[] for _ in range(7)]
+    durationData = []
+    lengthData = []
+    for index, row in res.iterrows():
+        hd = pd.date_range(row['starttime'],row['endtime'],freq='H')
+        for t in hd:
+            h = t.hour
+            hourData[h].append(row['tripid'])
+
+        dd = pd.date_range(row['starttime'],row['endtime'])
+        for t in dd:
+            d = t.weekday()
+            weekData[d].append(row['tripid'])
+
+        td = pd.Timedelta(row['endtime']-row['starttime']).seconds / 60.0
+        durationData.append({'tripid':row['tripid'],'value':td})
+
+        lengthData.append({'tripid':row['tripid'],'value':row['triplength']})
+
+    res1 = {
+        'hour': hourData,
+        'week': weekData,
+        'length': lengthData,
+        'duration': durationData
+    }
+
+    with open('portoapp/static/temp.json','w') as ofile:
+        json.dump(res1,ofile)
+
+    return HttpResponse(json.dumps(res1, default=json_serial), content_type="application/json")
