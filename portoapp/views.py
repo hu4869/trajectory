@@ -109,19 +109,15 @@ def get_trips_by_ids(ids):
 from math import log
 from datetime import date, datetime
 
-def json_serial(obj):
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    raise TypeError ("Type %s not serializable" % type(obj))
-
+import calendar
 def get_side_bar(request):
     db = cache.get('trip')
     res = db[['tripid', 'starttime', 'endtime', 'triplength']]
 
     hourData = [[] for _ in range(24)]
     weekData = [[] for _ in range(7)]
-    durationData = []
-    lengthData = []
+    scatterData = []
+
     for index, row in res.iterrows():
         hd = pd.date_range(row['starttime'],row['endtime'],freq='H')
         for t in hd:
@@ -134,18 +130,12 @@ def get_side_bar(request):
             weekData[d].append(row['tripid'])
 
         td = pd.Timedelta(row['endtime']-row['starttime']).seconds / 60.0
-        durationData.append({'tripid':row['tripid'],'value':td})
-
-        lengthData.append({'tripid':row['tripid'],'value':row['triplength']})
+        scatterData.append({'tripid':row['tripid'],'x':td, 'y':row['triplength']/1000})
 
     res1 = {
         'hour': hourData,
         'week': weekData,
-        'length': lengthData,
-        'duration': durationData
+        'scatter': scatterData,
     }
 
-    with open('portoapp/static/temp.json','w') as ofile:
-        json.dump(res1,ofile)
-
-    return HttpResponse(json.dumps(res1, default=json_serial), content_type="application/json")
+    return HttpResponse(json.dumps(res1), content_type="application/json")
