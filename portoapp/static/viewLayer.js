@@ -24,10 +24,12 @@ function ViewLayer(_m){
         bin = 200;
 
     this.init = function(){
+        $('#chart').empty();
         clean_view()
     };
 
     function clean_view(){
+        // $('#chart').empty()
         draw.stop();
         if (layers){
             $.map(layers, function(k){
@@ -92,8 +94,9 @@ function ViewLayer(_m){
     //######################################## query related ################################
     // new query result is ready
     var draw = new MissingData();
-    this.query = function(tripids){
+    this.query = function(tripids,barView){
         clean_view();
+
 
         var new_data = {
             trip: {},
@@ -118,8 +121,9 @@ function ViewLayer(_m){
             }
         });
         data = new_data;
+        barView.newBar(Object.keys(data.trip))
 
-        draw = new MissingData(missing, 'trip');
+        draw = new MissingData(missing, 'trip',barView);
         draw.start()
     };
 
@@ -133,7 +137,7 @@ function ViewLayer(_m){
     }
 
     //generate grow
-    function MissingData(m, target) {
+    function MissingData(m, target,barView) {
         var missing = m;
         var stop_flag = false;
         var pause_flag = false;
@@ -141,6 +145,8 @@ function ViewLayer(_m){
             var tmp = missing.splice(-bin);
             if (tmp.length <= 0)
                 return
+
+            barView.newBar(tmp);
 
             $.post('get_by_ids', {
                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),

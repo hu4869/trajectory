@@ -55,9 +55,27 @@ button.checked{
   pointer-events: all;
 }
 
-.obar{
+.chart_base{
+    fill: gray;
+}
+.chart_update{
     fill: steelblue;
 }
-.hbar{
+.chart_highlight{
     fill: orange;
+}
+
+.chart_wrap{
+    width: 100%;
+    height: 20%;
+}
+.scatter_wrap{
+    width: 100%;
+    height: 40%;
+}
+#chart{
+    text-align: center;
+}
+.chart{
+    height: calc(100% - 25px);
 }

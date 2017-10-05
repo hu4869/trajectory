@@ -16,6 +16,8 @@ function map_widget(_map){
     var map = _map;
 
     var view = new ViewLayer(map);
+    // var barView = new barchart_initial();
+
     view.init();
     $('#query_state>button').on('click', function(){
         view.pausequery()
@@ -61,8 +63,12 @@ function map_widget(_map){
                     //get new trip ids and send to trip and street draw
                     $.post('query', para, function(ids){
                         $('#all').text(ids.length);
-                        view.query(ids);
-                        // barchart_initial()
+
+                        barchart_initial(function(barView){
+                            view.query(ids,barView)
+                        });
+                        //barchart_initial();
+
                     })
                 }
             }

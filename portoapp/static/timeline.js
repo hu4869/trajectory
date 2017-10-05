@@ -96,7 +96,7 @@ d3.csv("/porto/static/timeline.csv", type, function(error, data) {
 
   var start = $('input[name="daterange"]').data('daterangepicker').startDate.toDate(),
       end = $('input[name="daterange"]').data('daterangepicker').endDate.toDate();
-  set_time_range(start, end)
+  set_time_range([start, end])
 });
 
 function set_time_range(r) {
