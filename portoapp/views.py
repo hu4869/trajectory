@@ -130,7 +130,7 @@ def get_side_bar(request):
             weekData[d].append(row['tripid'])
 
         td = pd.Timedelta(row['endtime']-row['starttime']).seconds / 60.0
-        scatterData.append({'tripid':row['tripid'],'x':td, 'y':row['triplength']/1000})
+        scatterData.append({'tripid':row['tripid'],'trip_duration':td, 'trip_length':row['triplength']/1000})
 
     res1 = {
         'hour': hourData,

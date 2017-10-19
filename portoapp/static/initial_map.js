@@ -16,7 +16,8 @@ function map_widget(_map){
     var map = _map;
 
     var view = new ViewLayer(map);
-    // var barView = new barchart_initial();
+    // The sidebar is used for store and edit queries
+    var sidebar = new SideBar();
 
     view.init();
     $('#query_state>button').on('click', function(){
@@ -64,11 +65,7 @@ function map_widget(_map){
                     $.post('query', para, function(ids){
                         $('#all').text(ids.length);
 
-                        barchart_initial(function(barView){
-                            view.query(ids,barView)
-                        });
-                        //barchart_initial();
-
+                        sidebar.storeQuery(ids,view);
                     })
                 }
             }
@@ -180,7 +177,7 @@ function map_widget(_map){
             drawnItems.clearLayers();
             $('#query_state').hide();
             state.update_state('area', null);
-            view.init()
+            // view.init()
         });
 
         map.on(L.Draw.Event.CREATED, function (event) {

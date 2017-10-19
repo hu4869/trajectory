@@ -1,113 +1,137 @@
-var chart_config = [
-    {
-        title: 'Group Trips by Weekday',
-        type: 'bar'
-    },
-    {
-        title: 'Group Trips by Hour',
-        type: 'bar'
-    },
-    {
-        title: 'Group Trip by Length',
-        type: 'area'
-    },
-    {
-        title: 'Group Trip by Travel Time',
-        type: 'area'
-    }
-];
+/**
+ * Created by tfeng1 on 10/17/17.
+ */
 
-var bin = 20;
-function bar(view){
-    var trip_cnt = Integer.pause($('#all').text());
-    bin = trip_cnt < 20? trip_cnt:20;
-    $.get('sidebar?bin='+bin, function(d){
-
-    });
-
-    //listen to charts in the view
-    this.update_query = function(){
-
-    };
-
-    //when the highlight state updated
-    view.highlight = function(id){
-
-    }
-}
-
-function onlyUnique(value, index, self) {
-    return self.indexOf(value) === index;
-}
-
-function chart(base, _c, config) {
-    var control = _c;
-
-    var width = 800,
-        height = 500,
-        margin = 30;
-    var svg = base.append('svg').attr('width', '100%')
-        .attr('viewBox','0 0 '+(width+margin*2) + ' '+(height+margin*2))
-        .append('g')
-        .attr('transform','translate('+[margin, margin]+')');
-    var x,
-        y = d3.scaleLinear().rangeRound([height, 0]);
-
-    this.init = function(id, val){
-        y.domain([0, d3.max(val)]);
-
-        if (config.type == 'bar'){
-            //group data by category
+function SideBar(){
+    var res = [];
+    var queryOpe = [];
+    var queryID = 0;
+    var mv = d3.select('#toolbar').append('div').classed('MV',true);
+    mv.append('span').text('Query Control')
+        .on('click',function(){
+            d3.select('#toolbar').classed('open',!d3.select('#toolbar').attr('class'))
+            // if(d3.select('#toolbar').attr('class')){
+            //     d3.select('#toolbar').classed('open',false)
+            // }else{
+            //     d3.select('#toolbar').classed('open',true)
+            // }
+        });
 
 
-            x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
-            x.domain(val.map(function(d){return d}));
+    var panel = d3.select('#toolbar').append('div').classed('controlBody',true).attr('align','center');
+    var container = panel.append('div').attr('id','listView').classed('listContainer',true);
 
-            svg.selectAll(".bar")
-                .data(data)
-                .enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", function(d) { return x(d.letter); })
-                .attr("y", function(d) { return y(d.frequency); })
-                .attr("width", x.bandwidth())
-                .attr("height", function(d) { return height - y(d.frequency); });
+    // Get trip id of query, add to list, and run Intersect operation as default
+    this.storeQuery = function(tripid,view){
+        var curID = ++queryID;
+
+        queryOpe.push({
+            queryID: curID,
+            queryName: 'Query ' + curID,
+            visible: true,
+            operation: 'Intersect',
+            data: tripid
+        });
+        $('#listView').empty()
+
+        var qu = container.selectAll('div')
+            .data(queryOpe)
+            .enter()
+            .append('div')
+            .attr('id',function(d){return d.queryID})
+            .classed('RC',true);
+
+        qu.append('input')
+            .attr('type','text')
+            .attr('size','7')
+            .attr('value',function(d){return 'Query '+ d.queryID.toString()})
+            .on('change',function(d){
+                d.queryName = d3.select(this).property('value')
+            });
+        qu.append('div').classed('icon',true)
+            .attr('id',function(d){return 'delete-' + d.queryID.toString()})
+            .style('background-image','url(porto/static/css/images/trash_icon.png)')
+            .on('click',function(d){
+                //delete query
+                $.each(queryOpe,function(i,t){
+                    if(t.queryID==d.queryID){
+                        queryOpe.splice(i,1);
+                        return;
+                    }
+                });
+                d3.select('#'+d.queryID.toString()).remove();
+                resOperation();
+            });
+        qu.append('div').classed('icon',true)
+            .attr('id',function(d){return 'union-' + d.queryID.toString()})
+            .style('background-image','url(porto/static/css/images/union.png)')
+            .style('background-color',function(d){
+                if(d.operation == 'Union'){return '#EEA657'}
+                else{return null}
+            })
+            .on('click',function(d){
+                //union this query with others
+                if(d.operation == 'Union'){return}
+                else{
+                    d.operation = 'Union'
+                    d3.select(this).style('background-color','#EEA657')
+                    d3.select('#intersect-' + d.queryID.toString()).style('background-color',null)
+                };
+                resOperation();
+            });
+        qu.append('div').classed('icon',true)
+            .attr('id',function(d){return 'intersect-' + d.queryID.toString()})
+            .style('background-image','url(porto/static/css/images/intersect.png)')
+            .style('background-color',function(d){
+                if(d.operation == 'Intersect'){return '#EEA657'}
+                else{return null}
+            })
+            .on('click',function(d){
+                //intersect this query with others
+                if(d.operation == 'Intersect'){return}
+                else{
+                    d.operation = 'Intersect'
+                    d3.select(this).style('background-color','#EEA657')
+                    d3.select('#union-' + d.queryID.toString()).style('background-color',null)
+                };
+                resOperation();
+            });
+        qu.append('div').classed('icon',true)
+            .attr('id',function(d){'hide-show-' + d.queryID.toString()})
+            .style('background-image',function(d){
+                if(d.visible){return 'url(porto/static/css/images/show_icon.png)'}
+                else{return 'url(porto/static/css/images/hide_icon.png)'}
+            })
+            .on('click',function(d){
+                //hide or show this query
+                d.visible = !d.visible;
+                imageurl = d.visible?'url(porto/static/css/images/show_icon.png)':'url(porto/static/css/images/hide_icon.png)';
+                d3.select(this).style('background-image',imageurl);
+                resOperation();
+            });
+        resOperation();
+
+        function resOperation(){
+            $.each(queryOpe,function(i,d){
+                if(d.operation=='Union'){
+                    res = res.concat(d.data);
+                }else{
+                    res = (res.length>0)?intersect(res,d.data):d.data;
+                }
+                if(!d.visible){
+                    res = res.filter(function(x){
+                        return !d.data.includes(x);
+                    })
+                }
+                res = res.filter(function(item, pos) {
+                    return res.indexOf(item) == pos;
+                })
+            });
+            console.log(res,queryOpe[0])
+            barchart_initial(view,function(barView){
+                            view.query(res,barView)
+            });
         }
-        else{
-            var max = d3.max(val, function(d){return d})
-            x = d3.scaleLog().range([0, width]).domain([1, max])
-
-        }
-
-        svg.append("g")
-            .attr("class", "axis axis--x")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-
-        svg.append("g")
-            .attr("class", "axis axis--y")
-            .call(d3.axisLeft(y).ticks(4))
-
-        svg.append("text")
-            .attr("transform", "translate("+[width/2, 0]+")")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .attr("text-anchor", "center")
-            .text(config.title);
-
-        svg.append("g")
-            .attr("class", "brush")
-            .call(brush)
-            .call(brush.move, x.range());
-
-        svg.append("rect")
-            .attr("class", "zoom")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .call(zoom);
-    };
-
-    this.highlight = function(id){
-
+        // return res;
     }
 }

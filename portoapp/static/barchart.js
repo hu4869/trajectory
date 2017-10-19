@@ -1,14 +1,15 @@
-function barchart_initial(func){
-    var initBar
+function barchart_initial(view,func){
+    var initBar;
+
     d3.json('sidebar', function (d) {
         $('#chart').empty();
 
-        initBar=new barControl(d);
+        initBar=new barControl(view,d);
         func(initBar);
     })
 }
 
-function barControl(_data){
+function barControl(_v,_data){
 
     var self = this;
     var int_to_weekday = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -19,13 +20,18 @@ function barControl(_data){
                 d.gradual(nid)
             })
         }
+        // toptable.gradual(nid)
     }
 
 
     this.notify = function(message){
         if(charts){
             var arr = $.map(charts, function (d) {
-                return d.get_highlight()
+                var dr = d.get_highlight()
+                var dnr = dr.filter(function(item, pos) {
+                    return dr.indexOf(item) == pos;
+                })
+                return dnr
             });
             var obj = {};
             for (var i = 0, j = arr.length; i < j; i++) {
@@ -39,6 +45,8 @@ function barControl(_data){
             $.each(charts, function(i,d){
                 d.update(res)
             });
+            _v.mapHighlight(res);
+            if(toptable){toptable.update(res);}
 
             if (message == 'brush_end'){
 
@@ -79,6 +87,10 @@ function barControl(_data){
         data:_data.scatter,
         title: 'trip length (km) / travel time (min)'
     }, self));
+
+    var toptable = new topTable(_data.scatter,self)
+    // var resTripid = $.map(_data.scatter,function(d){return d.tripid});
+
 }
 
 // function intersect(a, b) {
@@ -104,19 +116,19 @@ function intersect(a, b) {
 var scatter = function(_data, _control){
     var control = _control;
     var highlight = [];
-    var width = 450, height=450,
+    var width = 450, height=340,
         margin = {
             top:20,
-            bottom:60,
+            bottom:20,
             left:60,
             right:20
         };
 
     var data = _data.data;
     var y = d3.scaleLinear().range([height,20])
-        .domain([0, d3.max(data, function(d){  return d.y  })]);
+        .domain([0, d3.max(data, function(d){  return d.trip_length  })]);
     var x = d3.scaleLinear().range([0, width-20])
-        .domain([0, d3.max(data, function(d){  return d.x  })]);
+        .domain([0, d3.max(data, function(d){  return d.trip_duration  })]);
     var xAxis = d3.axisBottom(x),
         yAxis = d3.axisLeft(y);
 
@@ -124,22 +136,24 @@ var scatter = function(_data, _control){
         .attr('class', 'scatter_wrap');
 
     wrap.append('div').text(_data.title).attr('class','title');
+
     var svg = wrap.append('div').attr('class','chart').append('svg')
         .attr('height','100%')
         .attr('width','100%')
-        .attr('viewBox','0 0 '+(width+margin.right+margin.left)+ ' '+(height+margin.top+margin.bottom))
+        .attr('viewBox','0 0 '+(width+margin.right+margin.left)+ ' '+(height+margin.top+margin.bottom*1.5))
         .append('g')
         .attr('transform','translate('+[margin.left, margin.top]+')');
 
     var dots = svg.selectAll('dots').data(data).enter()
         .append('circle')
+        .style('opacity',0.5)
         .attr('class', 'chart_base')
         .attr('r', 5)
         .attr('cx', function(d){
-            return x(d.x)
+            return x(d.trip_duration)
         })
         .attr('cy', function(d){
-            return y(d.y)
+            return y(d.trip_length)
         });
 
     svg.append('g')
@@ -153,10 +167,26 @@ var scatter = function(_data, _control){
         .style('fill', '#000')
         .call(yAxis);
 
+    svg.append('text')
+        .attr('transform','rotate(-90)')
+        .attr('y',0-margin.left*3/4)
+        .attr('x',0-height/2)
+        .attr('dy','1em')
+        .style('font','16px sans-serif')
+        .style('text-anchor','middle')
+        .text('Trip length (km)');
+
+    svg.append('text')
+        .attr('y',335)
+        .attr('x',380)
+        .style('font','16px sans-serif')
+        .style('text-anchor','middle')
+        .text('Travel time (min)');
+
     //brush
      var brush = d3.brush()
         .extent([[0,0],[width,height]])
-         .on('start', brushstart)
+         // .on('start', brushstart)
         .on('brush',brushing)
         .on('end',brushed);
 
@@ -166,11 +196,11 @@ var scatter = function(_data, _control){
         .call(brush.move,[0,0]);
 
     // Burshstart
-    function brushstart(){
-        highlight = [];
-        if (control)
-            control.notify();
-    }
+    // function brushstart(){
+    //     highlight = [];
+    //     if (control)
+    //         control.notify();
+    // }
 
     // Burshing
     function brushing() {
@@ -178,7 +208,7 @@ var scatter = function(_data, _control){
         if (s){
             //align to bars
             highlight = $.map(data, function(d){
-                if (x(d.x)<s[1][0] && x(d.x)>s[0][0] && y(d.y)<s[1][1] && y(d.y)>s[0][1])
+                if (x(d.trip_duration)<=s[1][0] && x(d.trip_duration)>=s[0][0] && y(d.trip_length)<=s[1][1] && y(d.trip_length)>=s[0][1])
                     return d.tripid;
                 else
                     return []
@@ -246,7 +276,7 @@ var barChart = function(_data, _control){
     var width = 450, height=150,
         margin = {
             top:20,
-            bottom:60,
+            bottom:20,
             left:60,
             right:20
         };
@@ -255,8 +285,9 @@ var barChart = function(_data, _control){
         .attr('class', 'chart_wrap');
 
     wrap.append('div').text(_data.title).attr('class','title');
+
     var svg = wrap.append('div').attr('class','chart').append('svg')
-        .attr('height','100%')
+        .attr('height','80%')
         .attr('width','100%')
         .attr('viewBox','0 0 '+(width+margin.right+margin.left)+ ' '+(height+margin.top+margin.bottom))
         .append('g')
@@ -339,7 +370,23 @@ var barChart = function(_data, _control){
     svg.append('g')
         .attr('class', 'yaxis')
         .style('fill', '#000')
+        .attr('transform', 'translate(' + (x(chartdata[0].key)-2) + ',0)')
         .call(yAxis);
+
+    svg.append('text')
+        .attr('transform','rotate(-90)')
+        .attr('y',0-margin.left*2/3)
+        .attr('x',0-height/2)
+        .attr('dy','1em')
+        .style('text-anchor','middle')
+        .style('font','16px,sans-serif')
+        .text('# of trips');
+
+    // svg.append('text')
+    //     .attr('y',height+margin.bottom*1.3)
+    //     .attr('x',width-2*margin.right-2*margin.left)
+    //     .text(_data.title);
+
 
      //brush
      var brush = d3.brushX()
@@ -389,8 +436,11 @@ var barChart = function(_data, _control){
                 if (s[1]>=x(chartdata[i].key) &&(s[1]-x(chartdata[i].key)) < x.bandwidth()) {
                     b = x(chartdata[i].key)+x.bandwidth()
                 }
-
             }
+            if (s[1]>=x(chartdata[chartdata.length-1].key)+x.bandwidth()){
+                b=x(chartdata[chartdata.length-1].key)+x.bandwidth();
+            }
+            if (s[0]<=x(chartdata[0].key)){a=x(chartdata[0].key);}
             if (a >= b) {
                 d3.select(this).transition().call(d3.event.target.move, [0,0])
                 emptybrush()
@@ -414,11 +464,107 @@ var barChart = function(_data, _control){
     this.get_highlight = function(){
         if (highlight.length == 0)
             return $.map(chartdata, function(d){
-                // return d.ids.filter(function(item, pos, self) {return self.indexOf(item) == pos;})
                 return d.ids
             });
         else
-            // return highlight.filter(function(item, pos, self) {return self.indexOf(item) == pos;});
             return highlight
     };
 }
+
+var topTable = function(_data, _control){
+    var sortAscending = true;
+    var control = _control;
+    var data = _data;
+    var highlight = [];
+    var width = 450, height=340,
+        margin = {
+            top:20,
+            bottom:20,
+            left:60,
+            right:20
+        };
+
+    var columns = d3.keys(data[0])
+
+    var wrap = d3.select('#chart').append('div')
+        .attr('class', 'table_warp');
+
+    // wrap.append('div').text('Trip Table').attr('class','title');
+
+    var table = wrap.append('div')
+        .style('text-align','center')
+        // .style('overflow','auto')
+        .style('height','100%')
+        .append('table');
+    var thead = table.append('thead');
+    var tbody = table.append('tbody');
+
+    var headers = thead.append('tr')
+        .selectAll('th')
+        .data(columns).enter()
+        // .style('position','fixed')
+        .append('th')
+        .text(function(d){return d;})
+        .on('click',function(d){
+            headers.attr('class','header');
+
+            if(sortAscending){
+                rows.sort(function(a,b){
+                    if (highlight.includes(a.tripid) == highlight.includes(b.tripid)){
+                        return b[d]-a[d];
+                    }
+                    else{
+                        return highlight.includes(b.tripid) ? 1 : -1
+                    }
+                });
+                sortAscending = false;
+                this.className = 'des';
+            }else{
+                rows.sort(function(a, b) {
+                    if (highlight.includes(a.tripid) == highlight.includes(b.tripid)){
+                        return a[d]-b[d];
+                    }
+                    else{
+                        return highlight.includes(b.tripid) ? 1 : -1
+                    }
+                });
+                sortAscending = true;
+                this.className = 'aes';
+            }
+
+        });
+
+    var rows = tbody.selectAll('tr')
+        .data(data).enter()
+        .append('tr');
+
+    rows.selectAll('td')
+        .data(function(r){
+            return columns.map(function(c){
+                return {column:c,value:r[c]}
+            })
+        })
+        .enter()
+        .append('td')
+        // .attr('data-th',function(d){return d.column})
+        .text(function(d){
+            return d.value
+        })
+
+    this.update = function(tripid){
+        highlight = tripid;
+        if(tripid.length<data.length){
+            rows.classed('selected',function(d){
+                if(tripid.includes(d.tripid)){
+                    // $(this).parent().prependTo('tbody')
+                    $('tbody').prepend($(this))
+                    return true;
+                }
+                else{return false;}
+            })
+        }else{
+            rows.classed('selected',false)
+        }
+
+    };
+};

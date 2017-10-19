@@ -23,6 +23,7 @@ function ViewLayer(_m){
         },
         bin = 200;
 
+
     this.init = function(){
         $('#chart').empty();
         clean_view()
@@ -33,12 +34,13 @@ function ViewLayer(_m){
         draw.stop();
         if (layers){
             $.map(layers, function(k){
-                map.removeLayer(k);
+                // map.removeLayer(k);
+                k.clearLayers();
             })
         }
         layers = {
-            trip: L.geoJSON([], { style: {color: '#790E0E', opacity: .5, weight: 2} }).addTo(map),
-            trip_highlight: L.geoJSON([], { style: {color: 'blue', opacity: 1, weight: 2} }).addTo(map),
+            trip: L.geoJSON([], { style: {color: 'steelblue', opacity: 1, weight: 2} }).addTo(map),
+            trip_highlight: L.geoJSON([], { style: {color: 'orange', opacity: 1, weight: 4} }).addTo(map),
             start: L.geoJSON([],
                 {
                     pointToLayer: function (feature, latlng) {
@@ -205,6 +207,33 @@ function ViewLayer(_m){
         this.stop = function () {
             stop_flag = true
         }
+    };
+
+    this.mapHighlight = function(tripid){
+        layers['trip_highlight'].clearLayers();
+        layers['start_highlight'].clearLayers();
+        layers['end_highlight'].clearLayers();
+        var hldata = {
+            'trip': {},
+            'start': {},
+            'end': {}
+        };
+
+        $.map(tripid,function(d){
+            if(d in data['trip']){
+                hldata['trip'][d]=data['trip'][d];
+                hldata['start'][d]=data['start'][d];
+                hldata['end'][d]=data['end'][d];
+                layers['trip_highlight'].addData(data['trip'][d]);
+                layers['start_highlight'].addData(data['start'][d]);
+                layers['end_highlight'].addData(data['end'][d]);
+            }
+        })
+        if(Object.keys(hldata['trip']).length>=Object.keys(data['trip']).length){
+            layers['trip_highlight'].clearLayers();
+            layers['start_highlight'].clearLayers();
+            layers['end_highlight'].clearLayers();
+        };
     };
 
     function addData(target, v, ids){
