@@ -64,8 +64,9 @@ function map_widget(_map){
                     //get new trip ids and send to trip and street draw
                     $.post('query', para, function(ids){
                         $('#all').text(ids.length);
+                        var _layer = drawnItems.getLayers().slice(-1)[0];
 
-                        sidebar.storeQuery(ids,view);
+                        sidebar.storeQuery(ids,view,_layer,state.time_range);
                     })
                 }
             }
@@ -166,7 +167,7 @@ function map_widget(_map){
             edit: {
                 featureGroup: drawnItems,
                 remove: false,
-                edit: true
+                edit: false
             }
         });
         map.addControl(drawControl);
@@ -174,7 +175,7 @@ function map_widget(_map){
         //remove exists area if start a new one
         //also clean map
         map.on(L.Draw.Event.DRAWSTART, function(){
-            drawnItems.clearLayers();
+            // drawnItems.clearLayers();
             $('#query_state').hide();
             state.update_state('area', null);
             // view.init()
@@ -182,8 +183,20 @@ function map_widget(_map){
 
         map.on(L.Draw.Event.CREATED, function (event) {
             var layer = event.layer;
+            // state.update_state('layer',layer)
             drawnItems.addLayer(layer);
-            update_area();
+            // update_area();
+            if ('getLatLng' in layer){
+                var pos = layer.getLatLng();
+                state.update_state('area', {
+                    lat: pos.lat,
+                    lng: pos.lng,
+                    r: layer.getRadius()
+                })
+            }
+            else{
+                state.update_state('area', layer.getLatLngs());
+            }
         });
 
         map.on(L.Draw.Event.EDITED, function(){

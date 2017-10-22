@@ -20,9 +20,11 @@ function SideBar(){
 
     var panel = d3.select('#toolbar').append('div').classed('controlBody',true).attr('align','center');
     var container = panel.append('div').attr('id','listView').classed('listContainer',true);
+    var clearMap = d3.select('#toolbar').append('input').attr('id','clearmap').attr('type','button').attr('value','Clear');
+    // var btnClear = panel.append('input').attr('id','btnClear').attr('type','button').attr('value','Clear Map')
 
     // Get trip id of query, add to list, and run Intersect operation as default
-    this.storeQuery = function(tripid,view){
+    this.storeQuery = function(tripid,view,layer,time){
         var curID = ++queryID;
 
         queryOpe.push({
@@ -30,15 +32,17 @@ function SideBar(){
             queryName: 'Query ' + curID,
             visible: true,
             operation: 'Intersect',
-            data: tripid
+            data: tripid,
+            layer:layer,
+            timerange:time
         });
-        $('#listView').empty()
+        $('#listView').empty();
 
         var qu = container.selectAll('div')
             .data(queryOpe)
             .enter()
             .append('div')
-            .attr('id',function(d){return d.queryID})
+            .attr('id',function(d){return 'q' + d.queryID})
             .classed('RC',true);
 
         qu.append('input')
@@ -56,10 +60,11 @@ function SideBar(){
                 $.each(queryOpe,function(i,t){
                     if(t.queryID==d.queryID){
                         queryOpe.splice(i,1);
-                        return;
+                        return false;
                     }
                 });
-                d3.select('#'+d.queryID.toString()).remove();
+                d3.select('#q'+d.queryID.toString()).remove();
+                view.deleteQuery(d.layer);
                 resOperation();
             });
         qu.append('div').classed('icon',true)
@@ -109,26 +114,48 @@ function SideBar(){
                 d3.select(this).style('background-image',imageurl);
                 resOperation();
             });
+
+        d3.select('#clearmap').on('click',function(){
+            view.init();
+            $('#listView').empty();
+            $.each(queryOpe,function(i,d){
+                view.deleteQuery(d.layer);
+            });
+            res=[];
+            queryOpe=[];
+        });
+
         resOperation();
 
+        // Logic operation function
         function resOperation(){
+            // First operate the 'Union' operation
             $.each(queryOpe,function(i,d){
-                if(d.operation=='Union'){
+                if(d.operation=='Union' && d.visible){
                     res = res.concat(d.data);
-                }else{
+                }
+            });
+            // Then run the 'Intersect' operation
+            $.each(queryOpe,function(i,d){
+                if(d.operation=='Intersect' && d.visible){
                     res = (res.length>0)?intersect(res,d.data):d.data;
                 }
+            });
+            // Finally delete the 'Hide' query
+            $.each(queryOpe,function(i,d){
                 if(!d.visible){
                     res = res.filter(function(x){
                         return !d.data.includes(x);
                     })
                 }
-                res = res.filter(function(item, pos) {
-                    return res.indexOf(item) == pos;
-                })
             });
-            console.log(res,queryOpe[0])
-            barchart_initial(view,function(barView){
+            // Delete the repeated items
+            res = res.filter(function(item, pos) {
+                    return res.indexOf(item) == pos;
+            });
+
+            console.log(res,'\n',queryOpe[0],'\n',queryOpe.length)
+            barchart_initial(res,view,function(barView){
                             view.query(res,barView)
             });
         }

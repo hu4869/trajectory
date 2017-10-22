@@ -1,12 +1,27 @@
-function barchart_initial(view,func){
+function barchart_initial(ids,view,func){
     var initBar;
 
-    d3.json('sidebar', function (d) {
+    var para = {
+        val:  JSON.stringify(ids),
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+    };
+
+
+    //get new trip ids and send to trip and street draw
+    $.post('sidebar', para, function(d){
         $('#chart').empty();
 
         initBar=new barControl(view,d);
         func(initBar);
     })
+
+
+    // d3.json('sidebar', function (d) {
+    //     $('#chart').empty();
+    //
+    //     initBar=new barControl(view,d);
+    //     func(initBar);
+    // })
 }
 
 function barControl(_v,_data){

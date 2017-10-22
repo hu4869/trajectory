@@ -153,11 +153,20 @@ th.aes:after {
     height: 50%;
     position: absolute;
     left: -13%;
-    top:35%;
+    top:30%;
     z-index: 99999;
     transition: .5s left;
     padding: 10px;
     box-sizing: border-box;
+}
+#clearmap {
+    bottom: 0;
+    width: 100%;
+    right: 0;
+    height: 5%;
+    position: absolute;
+    font-size: 15px;
+    font-weight: bold;
 }
 #toolbar.open {
     left: 0;

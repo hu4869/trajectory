@@ -111,8 +111,10 @@ from datetime import date, datetime
 
 import calendar
 def get_side_bar(request):
+    ids = json.loads(request.POST['val'])
+
     db = cache.get('trip')
-    res = db[['tripid', 'starttime', 'endtime', 'triplength']]
+    res = db[['tripid', 'starttime', 'endtime', 'triplength']][db['tripid'].isin(ids)]
 
     hourData = [[] for _ in range(24)]
     weekData = [[] for _ in range(7)]

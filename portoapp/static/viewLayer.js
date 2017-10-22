@@ -26,7 +26,7 @@ function ViewLayer(_m){
 
     this.init = function(){
         $('#chart').empty();
-        clean_view()
+        clean_view();
     };
 
     function clean_view(){
@@ -254,4 +254,8 @@ function ViewLayer(_m){
         layers[target].addData(tmp)
         $('#state').text('get '+Object.keys(data.start).length + ' of ')
     };
+
+    this.deleteQuery = function(layer){
+        map.removeLayer(layer)
+    }
 }
