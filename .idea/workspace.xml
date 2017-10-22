@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="02f15d4f-3a53-4f97-813b-becb5fb5c666" name="Default" comment="icon update">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/portoapp/static/css/images/intersect.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/portoapp/static/css/images/union.png" />
+    <list default="true" id="02f15d4f-3a53-4f97-813b-becb5fb5c666" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/static/barchart.js" afterPath="$PROJECT_DIR$/portoapp/static/barchart.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/static/initial_map.js" afterPath="$PROJECT_DIR$/portoapp/static/initial_map.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/static/porto.css" afterPath="$PROJECT_DIR$/portoapp/static/porto.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/static/sidebar.js" afterPath="$PROJECT_DIR$/portoapp/static/sidebar.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/static/viewLayer.js" afterPath="$PROJECT_DIR$/portoapp/static/viewLayer.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/portoapp/views.py" afterPath="$PROJECT_DIR$/portoapp/views.py" />
     </list>
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -523,7 +515,14 @@
       <option name="project" value="LOCAL" />
       <updated>1508434319460</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="icon update">
+      <created>1508697786823</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1508697786825</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -556,7 +555,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="updated barchart js file" />
     <MESSAGE value="query control added" />
-    <option name="LAST_COMMIT_MESSAGE" value="query control added" />
+    <MESSAGE value="icon update" />
+    <option name="LAST_COMMIT_MESSAGE" value="icon update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
