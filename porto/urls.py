@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from portoapp import views as view
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -23,4 +25,4 @@ urlpatterns = [
     url(r'^query', view.query),
     url(r'^sidebar', view.get_side_bar),
     url(r'^get_by_ids', view.get_by_ids),
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

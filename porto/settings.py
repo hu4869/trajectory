@@ -36,12 +36,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'livesync',
-    'livereload',
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'leaflet',
-    'portoapp'
+    'portoapp',
+    'livereload',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -52,11 +51,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'livereload.middleware.LiveReloadScript'
-]
-
-MIDDLEWARE = [
-    'livereload.middleware.LiveReloadScript'
+    # 'livesync.core.middleware.DjangoLiveSyncMiddleware'
+    'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'porto.urls'
@@ -162,9 +158,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-STATIC_URL = '/porto/static/'
-STATIC_ROOT = '/static/'
-# STATICFILES_DIRS = (BASE_DIR, 'static')
+STATIC_URL = '/portoapp/static/'
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,  'templates'),
