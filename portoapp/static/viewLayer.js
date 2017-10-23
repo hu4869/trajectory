@@ -34,8 +34,8 @@ function ViewLayer(_m){
         draw.stop();
         if (layers){
             $.map(layers, function(k){
-                // map.removeLayer(k);
-                k.clearLayers();
+                map.removeLayer(k);
+                // k.clearLayers();
             })
         }
         layers = {

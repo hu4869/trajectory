@@ -143,7 +143,7 @@ function map_widget(_map){
             })
         ];
 
-        L.easyBar(SLG, options={position:'topleft'}).addTo(map);
+        L.easyBar(SLG, options={position:'topright'}).addTo(map);
     }
 
     var drawnItems = new L.FeatureGroup();
@@ -154,7 +154,7 @@ function map_widget(_map){
         create_query_target_tool().addTo(map);
 
         var drawControl = new L.Control.Draw({
-            position: 'topleft',
+            position: 'topright',
             collapsed: false,
             draw: {
                 // Available Shapes in Draw box. To disable anyone of them just convert true to false
@@ -260,7 +260,7 @@ function map_widget(_map){
             return  btn
         });
 
-        return L.easyBar(tmp, options={position:'topleft'});
+        return L.easyBar(tmp, options={position:'topright'});
     }
 
     function add_view_switcher(){
@@ -358,7 +358,7 @@ function map_widget(_map){
 
         ];
 
-        L.easyBar(STC, options={position:'topleft'}).addTo(map);
+        L.easyBar(STC, options={position:'topright'}).addTo(map);
     }
 }
 

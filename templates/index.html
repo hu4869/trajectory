@@ -26,7 +26,22 @@
 <body>
 
 {#{% leaflet_map "map" %}#}
-<div id="map"></div>
+<div id="map">
+    <div id="control" style="position: absolute;
+    right: 50px;
+    top: 12px;
+    z-index: 1000;">
+{#    <select>#}
+{#        <option>long trips first</option>#}
+{#        <option>short trips first</option>#}
+{#    </select>#}
+    <span id="query_state">
+        <label id="state"></label><label id="all"></label>
+        <button>Pause</button>
+    </span>
+        <input name="daterange" type="text" >
+</div>
+</div>
 <div id="timeline"></div>
 <div id="timelinebar">
     .   .Current range: <label id="timelinevalue"></label>.   .<button>submit</button>
@@ -37,20 +52,7 @@
 {#    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbc7DsCbHfoXRAdtnXMWwa6IhxCHXP4N4&callback=initialize">#}
 {#</script>#}
 
-<div id="control" style="position: absolute;
-    left: 50px;
-    top: 12px;
-    z-index: 1000;">
-    <input name="daterange" type="text" >
-{#    <select>#}
-{#        <option>long trips first</option>#}
-{#        <option>short trips first</option>#}
-{#    </select>#}
-    <span id="query_state">
-        <label id="state"></label><label id="all"></label>
-        <button>Pause</button>
-    </span>
-</div>
+
 
 <script>
     var map = L.map('map',{

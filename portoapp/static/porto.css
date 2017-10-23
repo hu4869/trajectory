@@ -20,6 +20,7 @@ body{
     width: 350px;
     height: 40px;
     z-index: 1010;
+    right: 440px;
     /*background-color: white;*/
 }
 
@@ -150,10 +151,10 @@ th.aes:after {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     opacity: .6;
     width: 13%;
-    height: 50%;
+    height: 90%;
     position: absolute;
     left: -13%;
-    top:30%;
+    top:0;
     z-index: 99999;
     transition: .5s left;
     padding: 10px;
@@ -163,7 +164,7 @@ th.aes:after {
     bottom: 0;
     width: 100%;
     right: 0;
-    height: 5%;
+    height: 3%;
     position: absolute;
     font-size: 15px;
     font-weight: bold;
@@ -180,7 +181,7 @@ th.aes:after {
     box-shadow: 1px 0 2px rgba(0, 0, 0, .3);
     position: absolute;
     right: -25px;
-    /*top: 40%;*/
+    top: 40%;
     white-space: nowrap;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
