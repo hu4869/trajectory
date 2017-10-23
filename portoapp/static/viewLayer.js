@@ -145,10 +145,17 @@ function ViewLayer(_m){
         var pause_flag = false;
         function draw(){
             var tmp = missing.splice(-bin);
-            if (tmp.length <= 0)
-                return
-
             barView.newBar(tmp);
+            if (tmp.length <= 0){
+                layers.start.addTo(map);
+                layers.start_highlight.addTo(map);
+                in_view.start = true;
+
+                layers.end.addTo(map);
+                layers.end_highlight.addTo(map);
+                in_view.end = true;
+                return
+            }
 
             $.post('get_by_ids', {
                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
@@ -166,18 +173,14 @@ function ViewLayer(_m){
                 }
 
                 if (missing.length == 0){
-                    // if (in_view.start == false)
-                    {
-                        layers.start.addTo(map);
-                        layers.start_highlight.addTo(map);
-                        in_view.start = true
-                    }
-                    // if (in_view.end == false)
-                    {
-                        layers.end.addTo(map);
-                        layers.end_highlight.addTo(map);
-                        in_view.end = true
-                    }
+                    // // if (in_view.start == false)
+                    // layers.start.addTo(map);
+                    // layers.start_highlight.addTo(map);
+                    // in_view.start = true;
+                    //
+                    // layers.end.addTo(map);
+                    // layers.end_highlight.addTo(map);
+                    // in_view.end = true;
 
                     $('#state').text('Done, total #: ');
                     $('#query_state>button').hide();

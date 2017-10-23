@@ -155,9 +155,9 @@ function SideBar(){
             });
 
             console.log(res,'\n',queryOpe[0],'\n',queryOpe.length)
-            barchart_initial(res,view,function(barView){
-                            view.query(res,barView)
-            });
+            // barchart_initial(res,view,function(barView){
+            //                 view.query(res,barView)
+            // });
         }
         // return res;
     }
