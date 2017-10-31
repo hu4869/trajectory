@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', view.index),
     url(r'^query', view.query),
+    url(r'^clear', view.clear),
     url(r'^sidebar', view.get_side_bar),
     url(r'^get_by_ids', view.get_by_ids),
+
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

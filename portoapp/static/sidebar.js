@@ -5,7 +5,7 @@
 function SideBar(){
     var res = [];
     var queryOpe = [];
-    var queryID = 0;
+    // var queryID = 0;
     var mv = d3.select('#toolbar').append('div').classed('MV',true);
     mv.append('span').text('Query Control')
         .on('click',function(){
@@ -24,8 +24,8 @@ function SideBar(){
     // var btnClear = panel.append('input').attr('id','btnClear').attr('type','button').attr('value','Clear Map')
 
     // Get trip id of query, add to list, and run Intersect operation as default
-    this.storeQuery = function(tripid,view,layer,time){
-        var curID = ++queryID;
+    this.storeQuery = function(tripid,qid,view,layer,time){
+        var curID = qid;
 
         queryOpe.push({
             queryID: curID,
@@ -47,7 +47,7 @@ function SideBar(){
 
         qu.append('input')
             .attr('type','text')
-            .attr('size','7')
+            .attr('size','8')
             .attr('value',function(d){return 'Query '+ d.queryID.toString()})
             .on('change',function(d){
                 d.queryName = d3.select(this).property('value')
@@ -60,11 +60,24 @@ function SideBar(){
                 $.each(queryOpe,function(i,t){
                     if(t.queryID==d.queryID){
                         queryOpe.splice(i,1);
+
+                        var para = {
+                            qid: d.queryID,
+                            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                        };
+                        $.post('clear',para, function(d){
+                            console.log(d)
+                        });
+
                         return false;
                     }
                 });
+                // if(queryOpe.length==0){clearAll();}
+
                 d3.select('#q'+d.queryID.toString()).remove();
                 view.deleteQuery(d.layer);
+                res=[];
+
                 resOperation();
             });
         qu.append('div').classed('icon',true)
@@ -115,33 +128,14 @@ function SideBar(){
                 resOperation();
             });
 
-        d3.select('#clearmap').on('click',function(){
-            view.init();
-            $('#listView').empty();
-            $.each(queryOpe,function(i,d){
-                view.deleteQuery(d.layer);
-            });
-            res=[];
-            queryOpe=[];
-        });
+        d3.select('#clearmap').on('click',clearAll);
 
         resOperation();
 
         // Logic operation function
         function resOperation(){
-            // First operate the 'Union' operation
-            $.each(queryOpe,function(i,d){
-                if(d.operation=='Union' && d.visible){
-                    res = res.concat(d.data);
-                }
-            });
-            // Then run the 'Intersect' operation
-            $.each(queryOpe,function(i,d){
-                if(d.operation=='Intersect' && d.visible){
-                    res = (res.length>0)?intersect(res,d.data):d.data;
-                }
-            });
-            // Finally delete the 'Hide' query
+            res = [];
+            // Delete the 'Hide' query
             $.each(queryOpe,function(i,d){
                 if(!d.visible){
                     res = res.filter(function(x){
@@ -149,16 +143,56 @@ function SideBar(){
                     })
                 }
             });
-            // Delete the repeated items
-            res = res.filter(function(item, pos) {
-                    return res.indexOf(item) == pos;
+            // Operate the 'Union' operation
+            $.each(queryOpe,function(i,d){
+                if(d.operation=='Union' && d.visible){
+                    res = res.concat(d.data);
+                    // Delete the repeated items
+                    res = res.filter(function(item, pos) {
+                        return res.indexOf(item) == pos;
+                    });
+                }
             });
 
-            console.log(res,'\n',queryOpe[0],'\n',queryOpe.length)
-            // barchart_initial(res,view,function(barView){
-            //                 view.query(res,barView)
-            // });
+            // Then run the 'Intersect' operation
+            $.each(queryOpe,function(i,d){
+                if(d.operation=='Intersect' && d.visible){
+                    res = (res.length>0)?intersect(res,d.data):d.data;
+                }
+            });
+
+
+
+            console.log(res,'\n',queryOpe[0],'\n',queryOpe.length);
+
+            // Update query status
+            $('#query_state').show();
+            $('#query_state>button').text('Pause');
+            $('#query_state>button').show();
+            $('#all').text('');
+            $('#state').text('querying...');
+            $('#all').text(res.length);
+
+
+            barchart_initial(res,view,function(barView){
+                            view.query(res,barView)
+            });
         }
         // return res;
+
+        function clearAll(){
+            view.init();
+            $('#listView').empty();
+            $.each(queryOpe,function(i,d){
+                view.deleteQuery(d.layer);
+            });
+            res=[];
+            queryOpe=[];
+            // queryID = 0;
+
+            $.get('clear', function(d){
+                console.log(d)
+            })
+        }
     }
 }

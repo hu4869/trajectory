@@ -12,6 +12,9 @@ def index(request):
 def query(request):
     para = json.loads(request.POST['val'])
 
+    # store each query by queryID and trip ids
+
+
     conf = {
         'start_time': para['time_range'][0],
         'end_time': para['time_range'][1],
@@ -43,21 +46,51 @@ def query(request):
     # get trip information is ready too slow, store it.
     print(query)
     t0 = time.time()
-    cache.delete('trip')
+    tmp = pd.read_sql(query, connection, index_col='tripid')
+    try:
+        db = cache.get('trip')
+        m_trip = pd.concat([tmp, db]).drop_duplicates()
+    except Exception:
+        m_trip = tmp
+    try:
+        eq = cache.get('eq')
+        eq[request.POST['queryID']] = set(tmp.index.values)
+    except Exception:
+        eq = {}
+        eq[request.POST['queryID']] = set(tmp.index.values)
 
-    m_trip = pd.read_sql(query, connection)
     t1 = time.time()
     print ('query', t1-t0)
 
     t0 = time.time()
+    cache.set('eq',eq)
     cache.set('trip', m_trip)
     # store query in session, redo query when cache is timeout
     request.session['query'] = query
     t1 = time.time()
     print('cache set: ', t1 - t0)
 
-    res = m_trip['tripid'].tolist()
+    res = tmp.index.values.tolist()
     return HttpResponse(json.dumps(res), content_type="application/json")
+
+
+def clear(request):
+    if request.POST['qid']:
+        qid = request.POST['qid']
+        eq = cache.get('eq')
+        tripid = eq.pop(qid)
+        cache.set('eq',eq)
+
+        for q in eq.values():
+            tripid = tripid-q
+
+        # for id in tripid:
+        trip = cache.get('trip')
+        trip.drop(trip.index[tripid])
+        cache.set('trip',trip)
+    else:
+        cache.delete('trip')
+
 
 def get_by_ids(request):
     para = json.loads(request.POST['val'])
@@ -114,7 +147,7 @@ def get_side_bar(request):
     ids = json.loads(request.POST['val'])
 
     db = cache.get('trip')
-    res = db[['tripid', 'starttime', 'endtime', 'triplength']][db['tripid'].isin(ids)]
+    res = db[['starttime', 'endtime', 'triplength']][db.index.isin(ids)]
 
     hourData = [[] for _ in range(24)]
     weekData = [[] for _ in range(7)]
@@ -124,15 +157,15 @@ def get_side_bar(request):
         hd = pd.date_range(row['starttime'],row['endtime'],freq='H')
         for t in hd:
             h = t.hour
-            hourData[h].append(row['tripid'])
+            hourData[h].append(int(index))
 
         dd = pd.date_range(row['starttime'],row['endtime'])
         for t in dd:
             d = t.weekday()
-            weekData[d].append(row['tripid'])
+            weekData[d].append(int(index))
 
         td = pd.Timedelta(row['endtime']-row['starttime']).seconds / 60.0
-        scatterData.append({'tripid':row['tripid'],'trip_duration':td, 'trip_length':row['triplength']/1000})
+        scatterData.append({'tripid': int(index),'trip_duration':td, 'trip_length':row['triplength']/1000})
 
     res1 = {
         'hour': hourData,

@@ -150,10 +150,10 @@ th.aes:after {
     background: rgba(0, 0, 0, 0.7);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     opacity: .6;
-    width: 13%;
+    width: 220px;
     height: 90%;
     position: absolute;
-    left: -13%;
+    left: -220px;
     top:0;
     z-index: 99999;
     transition: .5s left;

@@ -41,6 +41,7 @@ function ViewLayer(_m){
         layers = {
             trip: L.geoJSON([], { style: {color: 'steelblue', opacity: 1, weight: 2} }).addTo(map),
             trip_highlight: L.geoJSON([], { style: {color: 'orange', opacity: 1, weight: 4} }).addTo(map),
+            trip_s_highlight: L.geoJSON([], { style: {color: 'red', opacity: 1, weight: 5} }).addTo(map),
             start: L.geoJSON([],
                 {
                     pointToLayer: function (feature, latlng) {
@@ -96,7 +97,7 @@ function ViewLayer(_m){
     //######################################## query related ################################
     // new query result is ready
     var draw = new MissingData();
-    this.query = function(tripids,barView){
+    this.query = function(tripids,barView,qid){
         clean_view();
 
 
@@ -123,7 +124,7 @@ function ViewLayer(_m){
             }
         });
         data = new_data;
-        barView.newBar(Object.keys(data.trip))
+        barView.newBar(Object.keys(data.trip).map(Number));
 
         draw = new MissingData(missing, 'trip',barView);
         draw.start()
@@ -173,14 +174,14 @@ function ViewLayer(_m){
                 }
 
                 if (missing.length == 0){
-                    // // if (in_view.start == false)
-                    // layers.start.addTo(map);
-                    // layers.start_highlight.addTo(map);
-                    // in_view.start = true;
-                    //
-                    // layers.end.addTo(map);
-                    // layers.end_highlight.addTo(map);
-                    // in_view.end = true;
+                    // if (in_view.start == false)
+                    layers.start.addTo(map);
+                    layers.start_highlight.addTo(map);
+                    in_view.start = true;
+
+                    layers.end.addTo(map);
+                    layers.end_highlight.addTo(map);
+                    in_view.end = true;
 
                     $('#state').text('Done, total #: ');
                     $('#query_state>button').hide();
@@ -238,6 +239,16 @@ function ViewLayer(_m){
             layers['end_highlight'].clearLayers();
         };
     };
+
+    this.tripHighlight = function(tid){
+        var tripid = tid.toString();
+        layers['trip_s_highlight'].addData(data['trip'][tripid]);
+    }
+
+    this.clearTripHighlight = function(){
+        layers['trip_s_highlight'].clearLayers();
+
+    }
 
     function addData(target, v, ids){
         var tmp = []

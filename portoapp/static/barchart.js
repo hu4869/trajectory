@@ -53,7 +53,7 @@ function barControl(_v,_data){
                obj[arr[i]] = (obj[arr[i]] || 0) + 1;
             }
             var res = $.map(obj, function(v, k){
-                if (v >= charts.length)
+                if (v == charts.length)
                     return [parseInt(k)]
             });
 
@@ -103,7 +103,7 @@ function barControl(_v,_data){
         title: 'trip length (km) / travel time (min)'
     }, self));
 
-    var toptable = new topTable(_data.scatter,self)
+    var toptable = new topTable(_data.scatter,_v)
     // var resTripid = $.map(_data.scatter,function(d){return d.tripid});
 
 }
@@ -486,9 +486,9 @@ var barChart = function(_data, _control){
     };
 }
 
-var topTable = function(_data, _control){
+var topTable = function(_data, view){
     var sortAscending = true;
-    var control = _control;
+    // var control = _control;
     var data = _data;
     var highlight = [];
     var width = 450, height=340,
@@ -551,7 +551,11 @@ var topTable = function(_data, _control){
 
     var rows = tbody.selectAll('tr')
         .data(data).enter()
-        .append('tr');
+        .append('tr')
+        .on('mouseover',function(d){
+            view.tripHighlight(d.tripid)
+        })
+        .on('mouseout',view.clearTripHighlight)
 
     rows.selectAll('td')
         .data(function(r){

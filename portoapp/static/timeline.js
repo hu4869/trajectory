@@ -59,7 +59,7 @@ $('#timelinebar>button').on('click', function () {
     state.update_state('time_range', myrange)
 })
 
-d3.csv("/static/timeline.csv", type, function(error, data) {
+d3.csv("porto/static/timeline.csv", type, function(error, data) {
   if (error) throw error;
 
   x.domain(d3.extent(data, function(d) { return d.date; }));

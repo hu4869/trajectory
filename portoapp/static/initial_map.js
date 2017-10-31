@@ -13,6 +13,7 @@
 
 // inital query widgets on map
 function map_widget(_map){
+    var queryID = 0;
     var map = _map;
 
     var view = new ViewLayer(map);
@@ -52,21 +53,22 @@ function map_widget(_map){
                     view.killquery();
 
                     var para = {
+                        queryID: ++queryID,
                         val:  JSON.stringify(state),
                         csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
                     };
 
-                    $('#query_state').show();
-                    $('#query_state>button').text('Pause');
-                    $('#query_state>button').show();
-                    $('#all').text('');
-                    $('#state').text('querying...');
+                    // $('#query_state').show();
+                    // $('#query_state>button').text('Pause');
+                    // $('#query_state>button').show();
+                    // $('#all').text('');
+                    // $('#state').text('querying...');
                     //get new trip ids and send to trip and street draw
                     $.post('query', para, function(ids){
-                        $('#all').text(ids.length);
+                        // $('#all').text(ids.length);
                         var _layer = drawnItems.getLayers().slice(-1)[0];
 
-                        sidebar.storeQuery(ids,view,_layer,state.time_range);
+                        sidebar.storeQuery(ids,queryID,view,_layer,state.time_range);
                     })
                 }
             }
@@ -167,10 +169,11 @@ function map_widget(_map){
             edit: {
                 featureGroup: drawnItems,
                 remove: false,
-                edit: false
+                edit: true
             }
         });
         map.addControl(drawControl);
+        map.zoomControl.setPosition('topright');
 
         //remove exists area if start a new one
         //also clean map
